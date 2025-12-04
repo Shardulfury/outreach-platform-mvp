@@ -35,15 +35,12 @@ const Dashboard = () => {
 
     const handleSimulate = async () => {
         // Use absolute URL for Vercel deployment (Direct backend hit)
-        const WEBHOOK_URL = "https://unworried-lesly-ungovernmental.ngrok-free.dev/webhook/3aedd567-3915-44bd-823d-6effdde30481";
+        const WEBHOOK_URL = "https://shardul2004.tail258c66.ts.net/webhook/3aedd567-3915-44bd-823d-6effdde30481";
         setIsSimulating(true);
         try {
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'ngrok-skip-browser-warning': 'true'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
             const data = await response.json();
