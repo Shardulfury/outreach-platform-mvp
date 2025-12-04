@@ -12,14 +12,42 @@ import {
     Search,
     MessageSquare,
     ToggleLeft,
-    ToggleRight
+    ToggleRight,
+    Mail,
+    Linkedin,
+    Phone
 } from 'lucide-react';
+
+const INITIAL_DUMMY_DATA = [
+    {
+        company: "Stripe",
+        signal: "New CTO Hired",
+        time: "2m ago",
+        icon: <Users className="text-blue-400" size={18} />,
+        color: "blue"
+    },
+    {
+        company: "Vercel",
+        signal: "Series D Funding",
+        time: "12m ago",
+        icon: <Activity className="text-purple-400" size={18} />,
+        color: "purple"
+    },
+    {
+        company: "Airbnb",
+        signal: "G2 Review Spike",
+        time: "1h ago",
+        icon: <MessageSquare className="text-orange-400" size={18} />,
+        color: "orange"
+    }
+];
 
 const Dashboard = () => {
     const [currentView, setCurrentView] = useState('signals'); // Default is 'signals'
     const [selectedSignal, setSelectedSignal] = useState(null);
     const [isSimulating, setIsSimulating] = useState(false);
     const [simulationComplete, setSimulationComplete] = useState(false);
+    const [recentSignals, setRecentSignals] = useState(INITIAL_DUMMY_DATA);
 
     // Simulation State
     const [score, setScore] = useState(85);
@@ -29,14 +57,25 @@ const Dashboard = () => {
         "High probability of seeking enterprise-grade security compliance"
     ]);
     const [emailDraft, setEmailDraft] = useState(`Hi [Name],\n\nNoticed Acme Corp is aggressively scaling the engineering team. Typically, at this stage, maintaining dev environment consistency becomes a major bottleneck.\n\nOutreachAI helps teams like yours automate the onboarding workflow, reducing ramp time by 40%.\n\nWorth a quick chat to see how we can support the expansion?\n\nBest,\nSDR Profile`);
+    const [linkedinMessage, setLinkedinMessage] = useState("Hey [Name], saw the shift to [Competitor]. We've helped [Similar Company] bridge that gap...");
+    const [callScript, setCallScript] = useState("Intro: Hi [Name], calling regarding the recent [Signal]...");
+
     const [companyName, setCompanyName] = useState("Acme Corp");
     const [signalType, setSignalType] = useState("Expansion Signal");
     const [signalDescription, setSignalDescription] = useState("Detected hiring surge in Engineering Dept");
+
+    // Tab State
+    const [activeTab, setActiveTab] = useState('email');
+
+    // CRM Sync State
+    const [isSynced, setIsSynced] = useState(false);
 
     const handleSimulate = async () => {
         // Use absolute URL for Vercel deployment (Direct backend hit)
         const WEBHOOK_URL = "https://shardul2004.tail258c66.ts.net/webhook/3aedd567-3915-44bd-823d-6effdde30481";
         setIsSimulating(true);
+        setIsSynced(false); // Reset sync status on new simulation
+
         try {
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
@@ -45,15 +84,30 @@ const Dashboard = () => {
             });
             const data = await response.json();
             console.log("API Response:", data); // Log to debug
+
             // MAP SNAKE_CASE (API) TO CAMELCASE (STATE)
             if (data.score) setScore(data.score);
             if (data.company_name) setCompanyName(data.company_name);
             if (data.pain_points) setPainPoints(data.pain_points);
             if (data.email_draft) setEmailDraft(data.email_draft);
+            if (data.linkedin_message) setLinkedinMessage(data.linkedin_message);
+            if (data.call_script) setCallScript(data.call_script);
+
             if (data.signal) {
                 setSignalType(data.signal);
                 setSignalDescription(`Detected ${data.signal} event`);
             }
+
+            // Prepend new signal to feed
+            const newSignal = {
+                company: data.company_name || "New Signal",
+                signal: data.signal || "Detected Event",
+                time: "Just now",
+                icon: <Zap className="text-emerald-400" size={18} />,
+                color: "emerald"
+            };
+            setRecentSignals(prev => [newSignal, ...prev]);
+
             setSimulationComplete(true);
         } catch (error) {
             console.error("API Connection failed, switching to Safe Mode:", error);
@@ -70,6 +124,18 @@ const Dashboard = () => {
                     "Scaling challenges with remote engineering teams"
                 ]);
                 setEmailDraft("Hi [Name],\n\nSaw you're evaluating video messaging stacks. Often, teams grow out of basic tools when they hit enterprise security requirements.\n\nOutreachAI helps you enforce governance without slowing down your engineering culture.\n\nOpen to a quick compare against your current setup?\n\nBest,\nSDR Profile");
+                setLinkedinMessage("Hey [Name], saw you're exploring video messaging options. We've helped teams like Linear and Vercel scale their video infra securely. Worth a chat?");
+                setCallScript("Intro: Hi [Name], calling because I noticed Loom is expanding its engineering team. Usually that brings security headaches with video assets. We solve that.");
+
+                // Prepend fallback signal to feed
+                const fallbackSignal = {
+                    company: "Loom",
+                    signal: "Competitor Churn",
+                    time: "Just now",
+                    icon: <Zap className="text-emerald-400" size={18} />,
+                    color: "emerald"
+                };
+                setRecentSignals(prev => [fallbackSignal, ...prev]);
 
                 setSimulationComplete(true);
             }, 800); // Small delay to make it feel real
@@ -174,27 +240,16 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="space-y-3 overflow-y-auto pr-2">
-                                    <SignalCard
-                                        company="Stripe"
-                                        signal="New CTO Hired"
-                                        time="2m ago"
-                                        icon={<Users className="text-blue-400" size={18} />}
-                                        color="blue"
-                                    />
-                                    <SignalCard
-                                        company="Vercel"
-                                        signal="Series D Funding"
-                                        time="12m ago"
-                                        icon={<Activity className="text-purple-400" size={18} />}
-                                        color="purple"
-                                    />
-                                    <SignalCard
-                                        company="Airbnb"
-                                        signal="G2 Review Spike"
-                                        time="1h ago"
-                                        icon={<MessageSquare className="text-orange-400" size={18} />}
-                                        color="orange"
-                                    />
+                                    {recentSignals.map((sig, index) => (
+                                        <SignalCard
+                                            key={index}
+                                            company={sig.company}
+                                            signal={sig.signal}
+                                            time={sig.time}
+                                            icon={sig.icon}
+                                            color={sig.color}
+                                        />
+                                    ))}
                                 </div>
                             </div>
 
@@ -251,18 +306,56 @@ const Dashboard = () => {
                                                     <MessageSquare size={14} className="text-indigo-500" />
                                                     Drafted Outreach
                                                 </h3>
+
+                                                {/* Tabs */}
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <button
+                                                        onClick={() => setActiveTab('email')}
+                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'email' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800'}`}
+                                                    >
+                                                        <Mail size={14} /> Email
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setActiveTab('linkedin')}
+                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'linkedin' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:bg-slate-800'}`}
+                                                    >
+                                                        <Linkedin size={14} /> LinkedIn
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setActiveTab('call')}
+                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'call' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:bg-slate-800'}`}
+                                                    >
+                                                        <Phone size={14} /> Call Script
+                                                    </button>
+                                                </div>
+
                                                 <div className="relative group">
                                                     <textarea
                                                         className="w-full h-48 bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-300 text-sm leading-relaxed focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none font-mono"
-                                                        value={emailDraft}
-                                                        onChange={(e) => setEmailDraft(e.target.value)}
+                                                        value={
+                                                            activeTab === 'email' ? emailDraft :
+                                                                activeTab === 'linkedin' ? linkedinMessage :
+                                                                    callScript
+                                                        }
+                                                        onChange={(e) => {
+                                                            if (activeTab === 'email') setEmailDraft(e.target.value);
+                                                            if (activeTab === 'linkedin') setLinkedinMessage(e.target.value);
+                                                            if (activeTab === 'call') setCallScript(e.target.value);
+                                                        }}
                                                     />
                                                     <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button className="px-3 py-1.5 rounded-md bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 transition-colors">
                                                             Regenerate
                                                         </button>
-                                                        <button className="px-3 py-1.5 rounded-md bg-indigo-600 text-xs font-medium text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20 flex items-center gap-1.5">
-                                                            Send to CRM <ArrowRight size={12} />
+                                                        <button
+                                                            onClick={() => setIsSynced(true)}
+                                                            className={`px-3 py-1.5 rounded-md text-xs font-medium text-white transition-all shadow-lg flex items-center gap-1.5 ${isSynced ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20'}`}
+                                                        >
+                                                            {isSynced ? (
+                                                                <>Synced! <CheckCircle2 size={12} /></>
+                                                            ) : (
+                                                                <>Send to CRM <ArrowRight size={12} /></>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 </div>
