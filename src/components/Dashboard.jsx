@@ -16,7 +16,9 @@ import {
     Mail,
     Linkedin,
     Phone,
-    Copy
+    Copy,
+    Menu,
+    X
 } from 'lucide-react';
 
 const INITIAL_DUMMY_DATA = [
@@ -49,6 +51,9 @@ const Dashboard = () => {
     const [isSimulating, setIsSimulating] = useState(false);
     const [simulationComplete, setSimulationComplete] = useState(false);
     const [recentSignals, setRecentSignals] = useState(INITIAL_DUMMY_DATA);
+
+    // Mobile Menu State
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Simulation State
     const [score, setScore] = useState(85);
@@ -159,10 +164,31 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="flex h-screen bg-slate-950 text-slate-50 font-sans selection:bg-emerald-500/30">
-            {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl flex flex-col">
-                <div className="p-6">
+        <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen bg-slate-950 text-slate-50 font-sans selection:bg-emerald-500/30 lg:overflow-hidden">
+
+            {/* Mobile Header & Hamburger */}
+            <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-lg">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                        <Zap size={18} />
+                    </div>
+                    OutreachAI
+                </div>
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 text-slate-400 hover:text-white"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </div>
+
+            {/* Sidebar (Drawer on Mobile, Fixed on Desktop) */}
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out
+                lg:relative lg:translate-x-0 lg:bg-slate-900/50
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+                <div className="p-6 hidden lg:block">
                     <div className="flex items-center gap-2 text-emerald-400 font-bold text-xl tracking-tight">
                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                             <Zap size={18} />
@@ -171,30 +197,38 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <nav className="flex-1 px-3 space-y-1">
+                {/* Mobile Menu Header (Close Button) */}
+                <div className="p-4 flex items-center justify-between lg:hidden border-b border-slate-800">
+                    <span className="font-bold text-slate-200">Menu</span>
+                    <button onClick={() => setIsMobileMenuOpen(false)}>
+                        <X size={20} className="text-slate-400" />
+                    </button>
+                </div>
+
+                <nav className="flex-1 px-3 space-y-1 mt-4 lg:mt-0">
                     <NavItem
                         icon={<Radio size={18} />}
                         label="Live Signals"
                         active={currentView === 'signals'}
-                        onClick={() => setCurrentView('signals')}
+                        onClick={() => { setCurrentView('signals'); setIsMobileMenuOpen(false); }}
                     />
                     <NavItem
                         icon={<LayoutDashboard size={18} />}
                         label="Campaigns"
                         active={currentView === 'campaigns'}
-                        onClick={() => setCurrentView('campaigns')}
+                        onClick={() => { setCurrentView('campaigns'); setIsMobileMenuOpen(false); }}
                     />
                     <NavItem
                         icon={<Users size={18} />}
                         label="CRM Sync"
                         active={currentView === 'crm'}
-                        onClick={() => setCurrentView('crm')}
+                        onClick={() => { setCurrentView('crm'); setIsMobileMenuOpen(false); }}
                     />
                     <NavItem
                         icon={<Settings size={18} />}
                         label="Settings"
                         active={currentView === 'settings'}
-                        onClick={() => setCurrentView('settings')}
+                        onClick={() => { setCurrentView('settings'); setIsMobileMenuOpen(false); }}
                     />
                 </nav>
 
@@ -209,12 +243,20 @@ const Dashboard = () => {
                 </div>
             </aside>
 
+            {/* Overlay for Mobile Menu */}
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-x-hidden lg:overflow-hidden">
                 {currentView === 'signals' && (
                     <>
                         {/* Header */}
-                        <header className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm flex items-center justify-between px-8">
+                        <header className="h-auto py-4 lg:h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 lg:px-8 gap-4">
                             <div className="flex items-center gap-3">
                                 <h1 className="text-lg font-semibold text-slate-100">Live Intent Command Center</h1>
                                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-400">
@@ -229,31 +271,31 @@ const Dashboard = () => {
                             <button
                                 onClick={handleSimulate}
                                 disabled={isSimulating}
-                                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-white text-slate-900 text-sm font-medium rounded-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]"
+                                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-white text-slate-900 text-sm font-medium rounded-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]"
                             >
                                 {isSimulating ? (
                                     <>
                                         <Loader2 size={16} className="animate-spin" />
-                                        Scanning Market...
+                                        Scanning...
                                     </>
                                 ) : (
                                     <>
                                         <Search size={16} />
-                                        Simulate New Signal
+                                        Simulate Signal
                                     </>
                                 )}
                             </button>
                         </header>
 
-                        <div className="flex-1 flex overflow-hidden p-8 gap-8">
+                        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-4 lg:p-8 gap-4 lg:gap-8">
                             {/* Column 1: Signal Feed */}
-                            <div className="w-[35%] flex flex-col gap-4">
+                            <div className="w-full lg:w-[35%] flex flex-col gap-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Recent Market Signals</h2>
                                     <span className="text-xs text-slate-600">Real-time</span>
                                 </div>
 
-                                <div className="space-y-3 overflow-y-auto pr-2 h-[calc(100vh-200px)]">
+                                <div className="space-y-3 overflow-y-auto pr-2 max-h-[400px] lg:h-[calc(100vh-200px)] lg:max-h-none">
                                     {recentSignals.map((sig, index) => (
                                         <SignalCard
                                             key={index}
@@ -268,9 +310,9 @@ const Dashboard = () => {
                             </div>
 
                             {/* Column 2: Action Zone */}
-                            <div className="w-[65%] bg-slate-900/50 rounded-2xl border border-slate-800 p-1 relative overflow-hidden">
+                            <div className="w-full lg:w-[65%] bg-slate-900/50 rounded-2xl border border-slate-800 p-1 relative overflow-hidden min-h-[500px] lg:min-h-0">
                                 {!simulationComplete ? (
-                                    <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-4">
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-4 p-8 text-center">
                                         <div className="w-16 h-16 rounded-2xl bg-slate-800/50 flex items-center justify-center border border-slate-700/50">
                                             <Activity size={32} className="opacity-50" />
                                         </div>
@@ -279,25 +321,25 @@ const Dashboard = () => {
                                 ) : (
                                     <div className="h-full bg-slate-900 rounded-xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         {/* Action Card Header */}
-                                        <div className="p-6 border-b border-slate-800 flex items-start justify-between bg-slate-800/20">
+                                        <div className="p-4 lg:p-6 border-b border-slate-800 flex flex-col lg:flex-row items-start justify-between bg-slate-800/20 gap-4">
                                             <div>
                                                 <div className="flex items-center gap-3 mb-2">
-                                                    <h2 className="text-3xl font-bold text-white tracking-tight">{companyName}</h2>
-                                                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wide">
+                                                    <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">{companyName}</h2>
+                                                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wide whitespace-nowrap">
                                                         {signalType}
                                                     </span>
                                                 </div>
-                                                <p className="text-slate-300 text-base leading-relaxed max-w-2xl">{signalDescription}</p>
+                                                <p className="text-slate-300 text-sm lg:text-base leading-relaxed max-w-2xl">{signalDescription}</p>
                                             </div>
-                                            <div className="flex flex-col items-end">
-                                                <div className="flex items-center gap-2 text-emerald-400 font-bold text-3xl">
+                                            <div className="flex flex-row lg:flex-col items-center lg:items-end gap-2 lg:gap-0 w-full lg:w-auto justify-between lg:justify-start">
+                                                <div className="flex items-center gap-2 text-emerald-400 font-bold text-2xl lg:text-3xl">
                                                     {score}<span className="text-sm text-slate-500 font-normal self-end mb-1">/100</span>
                                                 </div>
                                                 <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Intent Score</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                                        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 lg:space-y-8">
                                             {/* Research Section */}
                                             <section>
                                                 <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -307,7 +349,7 @@ const Dashboard = () => {
                                                 <div className="grid gap-3">
                                                     {painPoints.map((point, i) => (
                                                         <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2" />
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
                                                             <span className="text-slate-300 text-sm leading-relaxed">{point}</span>
                                                         </div>
                                                     ))}
@@ -322,28 +364,27 @@ const Dashboard = () => {
                                                 </h3>
 
                                                 {/* Tabs - Segmented Control */}
-                                                <div className="flex gap-2 p-1 bg-slate-800 rounded-lg mb-4 w-fit">
-                                                    <button
-                                                        onClick={() => setActiveTab('email')}
-                                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'email' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-                                                    >
-                                                        <Mail size={14} /> Email
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setActiveTab('linkedin')}
-                                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'linkedin' ? 'bg-[#0077b5] text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-                                                    >
-                                                        <Linkedin size={14} /> LinkedIn
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setActiveTab('call')}
-                                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'call' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-                                                    >
-                                                        <Phone size={14} /> Call Script
-                                                    </button>
+                                                <div className="flex flex-wrap gap-2 p-1 bg-slate-800 rounded-lg mb-4 w-full lg:w-fit">
+                                                    {['email', 'linkedin', 'call'].map((tab) => (
+                                                        <button
+                                                            key={tab}
+                                                            onClick={() => setActiveTab(tab)}
+                                                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === tab
+                                                                    ? tab === 'email' ? 'bg-indigo-600 text-white shadow'
+                                                                        : tab === 'linkedin' ? 'bg-[#0077b5] text-white shadow'
+                                                                            : 'bg-emerald-600 text-white shadow'
+                                                                    : 'text-slate-400 hover:text-slate-200'
+                                                                }`}
+                                                        >
+                                                            {tab === 'email' && <Mail size={14} />}
+                                                            {tab === 'linkedin' && <Linkedin size={14} />}
+                                                            {tab === 'call' && <Phone size={14} />}
+                                                            {tab.charAt(0).toUpperCase() + tab.slice(1).replace('call', 'Call Script')}
+                                                        </button>
+                                                    ))}
                                                 </div>
 
-                                                <div className="relative group flex-1 min-h-[200px]">
+                                                <div className="relative group flex-1 min-h-[300px] lg:min-h-[200px]">
                                                     <textarea
                                                         className="w-full h-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-300 text-sm leading-relaxed focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none font-mono"
                                                         value={
@@ -357,7 +398,7 @@ const Dashboard = () => {
                                                             if (activeTab === 'call') setCallScript(e.target.value);
                                                         }}
                                                     />
-                                                    <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="absolute bottom-4 right-4 flex flex-wrap justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                         <button
                                                             onClick={copyToClipboard}
                                                             className="px-3 py-1.5 rounded-md bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 transition-colors flex items-center gap-1.5"
@@ -424,9 +465,9 @@ const SignalCard = ({ company, signal, time, icon, color }) => (
 );
 
 const CRMView = () => (
-    <div className="p-8">
+    <div className="p-4 lg:p-8 overflow-x-auto">
         <h2 className="text-2xl font-bold text-slate-100 mb-6">Salesforce Sync Logs</h2>
-        <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden min-w-[600px]">
             <table className="w-full text-left text-sm text-slate-400">
                 <thead className="bg-slate-800/50 text-slate-200 uppercase tracking-wider font-medium">
                     <tr>
@@ -461,7 +502,7 @@ const CRMView = () => (
 );
 
 const SettingsView = () => (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 lg:p-8 max-w-2xl">
         <h2 className="text-2xl font-bold text-slate-100 mb-6">Data Sources</h2>
         <div className="space-y-4">
             {[
