@@ -15,7 +15,8 @@ import {
     ToggleRight,
     Mail,
     Linkedin,
-    Phone
+    Phone,
+    Copy
 } from 'lucide-react';
 
 const INITIAL_DUMMY_DATA = [
@@ -144,6 +145,13 @@ const Dashboard = () => {
         }
     };
 
+    const copyToClipboard = () => {
+        const text = activeTab === 'email' ? emailDraft :
+            activeTab === 'linkedin' ? linkedinMessage :
+                callScript;
+        navigator.clipboard.writeText(text);
+    };
+
     return (
         <div className="flex h-screen bg-slate-950 text-slate-50 font-sans selection:bg-emerald-500/30">
             {/* Sidebar */}
@@ -239,7 +247,7 @@ const Dashboard = () => {
                                     <span className="text-xs text-slate-600">Real-time</span>
                                 </div>
 
-                                <div className="space-y-3 overflow-y-auto pr-2">
+                                <div className="space-y-3 overflow-y-auto pr-2 h-[calc(100vh-200px)]">
                                     {recentSignals.map((sig, index) => (
                                         <SignalCard
                                             key={index}
@@ -301,37 +309,37 @@ const Dashboard = () => {
                                             </section>
 
                                             {/* Action Section */}
-                                            <section>
+                                            <section className="flex flex-col h-full">
                                                 <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                                                     <MessageSquare size={14} className="text-indigo-500" />
                                                     Drafted Outreach
                                                 </h3>
 
-                                                {/* Tabs */}
-                                                <div className="flex items-center gap-2 mb-3">
+                                                {/* Tabs - Segmented Control */}
+                                                <div className="flex gap-2 p-1 bg-slate-800 rounded-lg mb-4 w-fit">
                                                     <button
                                                         onClick={() => setActiveTab('email')}
-                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'email' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800'}`}
+                                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'email' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                                                     >
                                                         <Mail size={14} /> Email
                                                     </button>
                                                     <button
                                                         onClick={() => setActiveTab('linkedin')}
-                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'linkedin' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:bg-slate-800'}`}
+                                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'linkedin' ? 'bg-[#0077b5] text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                                                     >
                                                         <Linkedin size={14} /> LinkedIn
                                                     </button>
                                                     <button
                                                         onClick={() => setActiveTab('call')}
-                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'call' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:bg-slate-800'}`}
+                                                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${activeTab === 'call' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                                                     >
                                                         <Phone size={14} /> Call Script
                                                     </button>
                                                 </div>
 
-                                                <div className="relative group">
+                                                <div className="relative group flex-1 min-h-[200px]">
                                                     <textarea
-                                                        className="w-full h-48 bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-300 text-sm leading-relaxed focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none font-mono"
+                                                        className="w-full h-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-300 text-sm leading-relaxed focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none font-mono"
                                                         value={
                                                             activeTab === 'email' ? emailDraft :
                                                                 activeTab === 'linkedin' ? linkedinMessage :
@@ -344,6 +352,12 @@ const Dashboard = () => {
                                                         }}
                                                     />
                                                     <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            onClick={copyToClipboard}
+                                                            className="px-3 py-1.5 rounded-md bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 transition-colors flex items-center gap-1.5"
+                                                        >
+                                                            <Copy size={12} /> Copy
+                                                        </button>
                                                         <button className="px-3 py-1.5 rounded-md bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 transition-colors">
                                                             Regenerate
                                                         </button>
@@ -388,7 +402,7 @@ const NavItem = ({ icon, label, active, onClick }) => (
 );
 
 const SignalCard = ({ company, signal, time, icon, color }) => (
-    <div className="group p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all cursor-pointer relative overflow-hidden">
+    <div className="group p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/50 transition-all cursor-pointer relative overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
         <div className={`absolute top-0 left-0 w-1 h-full bg-${color}-500/50 opacity-0 group-hover:opacity-100 transition-opacity`} />
         <div className="flex items-start justify-between mb-1">
             <div className="flex items-center gap-2">
@@ -399,7 +413,7 @@ const SignalCard = ({ company, signal, time, icon, color }) => (
             </div>
             <span className="text-xs text-slate-500 font-mono">{time}</span>
         </div>
-        <p className="text-sm text-slate-400 pl-9">{signal}</p>
+        <p className="text-sm text-slate-400 pl-9 line-clamp-2">{signal}</p>
     </div>
 );
 
