@@ -95,8 +95,14 @@ const Dashboard = () => {
             if (data.call_script) setCallScript(data.call_script);
 
             if (data.signal) {
-                setSignalType(data.signal);
-                setSignalDescription(`Detected ${data.signal} event`);
+                // Fix: If signal text is long, use it as description and set a generic type
+                if (data.signal.length > 30) {
+                    setSignalType("High Intent Signal");
+                    setSignalDescription(data.signal);
+                } else {
+                    setSignalType(data.signal);
+                    setSignalDescription(`Detected ${data.signal} event`);
+                }
             }
 
             // Prepend new signal to feed
@@ -275,19 +281,19 @@ const Dashboard = () => {
                                         {/* Action Card Header */}
                                         <div className="p-6 border-b border-slate-800 flex items-start justify-between bg-slate-800/20">
                                             <div>
-                                                <div className="flex items-center gap-3 mb-1">
-                                                    <h2 className="text-2xl font-bold text-white">{companyName}</h2>
-                                                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h2 className="text-3xl font-bold text-white tracking-tight">{companyName}</h2>
+                                                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wide">
                                                         {signalType}
                                                     </span>
                                                 </div>
-                                                <p className="text-slate-400 text-sm">{signalDescription}</p>
+                                                <p className="text-slate-300 text-base leading-relaxed max-w-2xl">{signalDescription}</p>
                                             </div>
                                             <div className="flex flex-col items-end">
-                                                <div className="flex items-center gap-2 text-emerald-400 font-bold text-2xl">
+                                                <div className="flex items-center gap-2 text-emerald-400 font-bold text-3xl">
                                                     {score}<span className="text-sm text-slate-500 font-normal self-end mb-1">/100</span>
                                                 </div>
-                                                <span className="text-xs text-slate-500">Intent Score</span>
+                                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Intent Score</span>
                                             </div>
                                         </div>
 
